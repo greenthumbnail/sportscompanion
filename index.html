@@ -63,8 +63,19 @@ button.warn{background:var(--warnbg);border-color:var(--warn);color:var(--warn)}
 .bonus-info{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:14px}
 .bonus-info b{color:var(--ac);display:block;margin-bottom:4px}
 .feel button{flex:1;padding:10px 0}
-input[type="text"],textarea{font:inherit;width:100%;padding:11px;border-radius:12px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);margin:8px 0}
-textarea{min-height:74px;resize:vertical;line-height:1.4}
+input[type="text"],input[type="password"],select,textarea{font:inherit;width:100%;padding:11px;border-radius:12px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);margin:6px 0}
+textarea{min-height:110px;resize:vertical;line-height:1.5}
+textarea.log-area{min-height:210px;font-size:16px;padding:13px;line-height:1.55}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 8px}
+.chip{padding:6px 10px;min-height:32px;font-size:13px;border-radius:9px;background:var(--bg);border:1px solid var(--bd);color:var(--mut)}
+.chip:hover,.chip.on{border-color:var(--ac);color:var(--ac);background:var(--acbg)}
+.day-tweak{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-top:8px}
+.day-tweak-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+@media (max-width:420px){.day-tweak-row{grid-template-columns:1fr}}
+.sync-badges{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.sync-pill{font-size:12px;font-weight:600;padding:3px 8px;border-radius:8px;background:var(--dim);color:var(--mut)}
+.sync-pill.ok{background:var(--acbg);color:var(--ac)}
+.sync-pill.err{background:var(--warnbg);color:var(--warn)}
 .log{font-size:15px;padding:8px 0;border-top:1px solid var(--bd);display:flex;justify-content:space-between;gap:10px}
 .log:first-of-type{border-top:0}
 .log small{color:var(--mut)}
@@ -170,11 +181,23 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
 
   <!-- Abschluss & Logbuch -->
   <div class="card">
-    <h2>Abschluss und Logbuch</h2>
+    <div class="card-hdr">
+      <h2>Abschluss &amp; Logbuch</h2>
+      <div class="sync-badges">
+        <span class="sync-pill" id="gdocStatusBadge">Docs: Aus</span>
+        <span class="sync-pill" id="ghStatusBadge">GitHub: Aus</span>
+      </div>
+    </div>
     <p class="sub" style="margin-bottom:6px">Wie hat es sich angefühlt? (1 = zäh, 5 = stark)</p>
     <div class="row feel" id="feel"></div>
-    <input id="note" type="text" placeholder="Zeile 1–2: Skill-Stand & Spiel-Ergebnis (Runden/Zeit)" maxlength="160">
-    <button class="pri" id="done">Einheit abhaken</button>
+
+    <!-- Schnell-Bausteine für die 3 Logbuch-Zeilen -->
+    <div class="chips" id="noteChips"></div>
+
+    <textarea id="note" class="log-area" rows="9" placeholder="Zeile 1 (Skill-Stand):&#10;z.B. Pistol 4 kg 3×4/Bein (5s unten), Wand-Handstand 3×20s&#10;&#10;Zeile 2 (Spiel-Ergebnis / Rekord):&#10;z.B. AMRAP 4 Runden + 3 Klimmzüge&#10;&#10;Zeile 3 (Beobachtung / Körpergefühl):&#10;z.B. Linkes Sprunggelenk heute deutlich freier, Schultern stabil"></textarea>
+    <div class="row" style="margin-top:6px">
+      <button class="pri" id="done">Einheit abhaken &amp; übertragen</button>
+    </div>
   </div>
 
   <!-- Bonus-Einheiten -->
@@ -194,7 +217,52 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
 
   <!-- Verlauf & Daten-Backup -->
   <div class="card">
-    <h2>Verlauf &amp; Backup</h2>
+    <div class="card-hdr">
+      <h2>Verlauf, Sync &amp; Backup</h2>
+      <div class="row" style="gap:6px">
+        <button class="sm" id="gdocToggleBtn">Google Docs</button>
+        <button class="sm" id="ghToggleBtn">GitHub-Sync</button>
+      </div>
+    </div>
+
+    <!-- Google Docs Auto-Sync Konfiguration -->
+    <div id="gdocBox" class="hidden" style="margin-bottom:12px;padding:12px;border-radius:12px;background:var(--bg);border:1px solid var(--bd)">
+      <b>Automatisch in dein bestehendes Google Doc schreiben</b>
+      <p class="sub" style="font-size:13px;margin:4px 0 8px">Jedes abgehakte Training wird automatisch oben in dein Handy-Trainingstagebuch (Google Docs) eingefügt.</p>
+      <label class="ed-lbl">Google Apps Script Web-App-URL</label>
+      <input type="text" id="gdocUrl" placeholder="https://script.google.com/macros/s/.../exec">
+      <div class="row" style="margin-top:8px">
+        <button class="sm sel" id="gdocSaveBtn">URL speichern &amp; testen</button>
+        <button class="sm" id="gdocSyncLastBtn">Letzten Eintrag jetzt senden</button>
+      </div>
+      <p class="sub" id="gdocTestInfo" style="margin-top:8px;font-size:13px"></p>
+    </div>
+
+    <!-- GitHub Auto-Sync Konfiguration -->
+    <div id="ghBox" class="hidden" style="margin-bottom:12px;padding:12px;border-radius:12px;background:var(--bg);border:1px solid var(--bd)">
+      <b>Automatisch in GitHub-Markdown schreiben</b>
+      <p class="sub" style="font-size:13px;margin:4px 0 8px">Jedes abgehakte Training wird automatisch als neuer Abschnitt an deine Datei im Repository angehängt (und ist dort direkt einseh- und bearbeitbar).</p>
+      <label class="ed-lbl">Repository (Benutzername/Repo-Name)</label>
+      <input type="text" id="ghRepo" placeholder="z.B. dein-name/nordstern-training">
+      <div class="day-tweak-row">
+        <div>
+          <label class="ed-lbl">Zieldatei im Repo</label>
+          <input type="text" id="ghPath" placeholder="logbuch.md">
+        </div>
+        <div>
+          <label class="ed-lbl">Branch</label>
+          <input type="text" id="ghBranch" placeholder="main">
+        </div>
+      </div>
+      <label class="ed-lbl">GitHub Personal Access Token (Fine-grained: Contents Read &amp; Write)</label>
+      <input type="password" id="ghToken" placeholder="github_pat_... oder ghp_...">
+      <div class="row" style="margin-top:8px">
+        <button class="sm sel" id="ghSaveBtn">Verbindung speichern &amp; testen</button>
+        <button class="sm" id="ghSyncAllBtn">Komplettes Logbuch jetzt übertragen</button>
+      </div>
+      <p class="sub" id="ghTestInfo" style="margin-top:8px;font-size:13px"></p>
+    </div>
+
     <div id="hist"></div>
     <div class="row" style="margin-top:10px;justify-content:space-between;align-items:center">
       <button class="link" id="undo">Letzten Eintrag löschen</button>
@@ -304,7 +372,22 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
     theme: "auto",
     sound: true,
     customData: null,
-    customF: null
+    customF: null,
+    dayCfg: {
+      pistolWeight: "4 kg",
+      hsFocus: "Alle 3 im Wechsel (Pike, Wand, Negative)",
+      noteAddon: "",
+      gameCustom: ""
+    },
+    gdoc: {
+      url: ""
+    },
+    gh: {
+      repo: "",
+      path: "logbuch.md",
+      branch: "main",
+      token: ""
+    }
   };
 
   try {
@@ -323,6 +406,21 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
       /* customData nur übernehmen, wenn es bereits das v3-Format besitzt */
       if (p && p.customData && typeof p.customData.ritual === "string") st.customData = p.customData;
       if (p && Array.isArray(p.customF)) st.customF = p.customF;
+      if (p && p.dayCfg) {
+        st.dayCfg.pistolWeight = p.dayCfg.pistolWeight || "4 kg";
+        st.dayCfg.hsFocus = p.dayCfg.hsFocus || "Alle 3 im Wechsel (Pike, Wand, Negative)";
+        st.dayCfg.noteAddon = p.dayCfg.noteAddon || "";
+        st.dayCfg.gameCustom = p.dayCfg.gameCustom || "";
+      }
+      if (p && p.gdoc) {
+        st.gdoc.url = p.gdoc.url || "";
+      }
+      if (p && p.gh) {
+        st.gh.repo = p.gh.repo || "";
+        st.gh.path = p.gh.path || "logbuch.md";
+        st.gh.branch = p.gh.branch || "main";
+        st.gh.token = p.gh.token || "";
+      }
     }
   } catch (e) {}
 
@@ -667,6 +765,9 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
   var rerollsLeft = 1; // Abschnitt 5: "Vom Würfel getroffene Formate dürfen einmal pro Einheit (vor dem Start) neu gewürfelt werden."
   var editing = false;
   var activeBonusGuide = null;
+  var showDayTweak = false;
+  var showGdocBox = false;
+  var showGhBox = false;
 
   function lastCoreEntry(){
     var c = core();
@@ -696,19 +797,58 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
       var infoParts = [];
       if (last.n) infoParts.push(esc(last.n));
       if (last.g) infoParts.push("Gefühl " + last.g + "/5");
-      lastHtml = '<div class="last-note"><small>Letzte Kerneinheit am ' + dtStr + ' (' + esc(TYPES[last.t] || last.t) + '):</small>' + infoParts.join(" · ") + '</div>';
+      lastHtml = '<div class="last-note"><small>Letzte Kerneinheit am ' + dtStr + ' (' + esc(TYPES[last.t] || last.t) + '):</small><span style="white-space:pre-line;color:var(--tx)">' + infoParts.join(" · ") + '</span></div>';
     }
 
     var distText = (size === 10)
       ? "Mini-Version (5 Min.): 2 Pistol-Durchgänge im Wechsel mit 2 Handstand-Durchgängen (je 2–3 Min.)."
       : DATA.skillDist[cur];
 
+    var tweakHtml =
+      '<div style="margin-top:8px">' +
+        '<button class="sm' + (showDayTweak ? ' sel' : '') + '" id="toggleDayTweak">Heute individuell anpassen (' + esc(st.dayCfg.pistolWeight) + (st.dayCfg.gameCustom || st.dayCfg.noteAddon ? ' · aktiv' : '') + ')</button>' +
+      '</div>';
+
+    if (showDayTweak) {
+      var weights = ["5,5 kg", "4 kg", "3 kg", "2 kg", "1 kg", "Frei (0 kg)"];
+      var hsOptions = [
+        "Alle 3 im Wechsel (Pike, Wand, Negative)",
+        "Pike Push-ups + Wand-Handstand (ohne Negative)",
+        "Fokus Wand-Handstand (Ziel 30 Sek.)",
+        "Fokus Pike Push-ups (Füße +10 cm erhöht)",
+        "Pflege (1–2 lockere Durchgänge)"
+      ];
+      tweakHtml +=
+        '<div class="day-tweak">' +
+          '<div class="day-tweak-row">' +
+            '<div>' +
+              '<label class="ed-lbl">Pistol Gegengewicht</label>' +
+              '<select id="cfgPistol">' +
+                weights.map(function(w){ return '<option value="' + esc(w) + '"' + (st.dayCfg.pistolWeight === w ? ' selected' : '') + '>' + esc(w) + '</option>'; }).join("") +
+              '</select>' +
+            '</div>' +
+            '<div>' +
+              '<label class="ed-lbl">Handstand-Fokus heute</label>' +
+              '<select id="cfgHs">' +
+                hsOptions.map(function(o){ return '<option value="' + esc(o) + '"' + (st.dayCfg.hsFocus === o ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join("") +
+              '</select>' +
+            '</div>' +
+          '</div>' +
+          '<label class="ed-lbl">Skill-Anpassung heute (z.B. Sissy Squats ohne Hilfe, 7 Sek. Pause unten)</label>' +
+          '<input type="text" id="cfgAddon" value="' + esc(st.dayCfg.noteAddon) + '" placeholder="Optionaler Fokus für den heutigen Skill-Block">' +
+          '<label class="ed-lbl">Spiel-Anpassung heute (z.B. Klimmzüge 5 Wdh., Dips ohne Band, Übung getauscht)</label>' +
+          '<input type="text" id="cfgGame" value="' + esc(st.dayCfg.gameCustom) + '" placeholder="Optionaler Ersatz oder Wdh.-Ziel für das heutige Spiel">' +
+        '</div>';
+    }
+
     var skillHtml =
       '<ul class="skill-list">' +
-        '<li><strong>Unterkörper:</strong> ' + esc(DATA.skillPistol) + '</li>' +
-        '<li><strong>Oberkörper:</strong> ' + esc(DATA.skillHandstand) + '</li>' +
+        '<li><strong>Unterkörper (' + esc(st.dayCfg.pistolWeight) + '):</strong> ' + esc(DATA.skillPistol) + '</li>' +
+        '<li><strong>Oberkörper (' + esc(st.dayCfg.hsFocus) + '):</strong> ' + esc(DATA.skillHandstand) + '</li>' +
+        (st.dayCfg.noteAddon ? '<li><strong>Heute angepasst:</strong> ' + esc(st.dayCfg.noteAddon) + '</li>' : '') +
       '</ul>' +
       '<div class="hint-pill">' + esc(distText) + '</div>' +
+      tweakHtml +
       lastHtml;
 
     h += blk(
@@ -727,20 +867,29 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
       var rerollLabel = (fmt === null)
         ? "Format würfeln"
         : (rerollsLeft > 0 ? "Neu würfeln (1× frei)" : "Neu würfeln (verbraucht)");
+      var fmtSelect = '<select id="pickFmt" style="max-width:220px;margin:0;padding:8px 10px;min-height:44px">' +
+        '<option value="">Oder direkt wählen…</option>' +
+        F.map(function(item, idx){
+          return '<option value="' + idx + '"' + (fmt === idx ? ' selected' : '') + '>' + (idx + 1) + '. ' + esc(item[0]) + '</option>';
+        }).join("") +
+      '</select>';
+
       extra = '<div class="fmt">' +
         (fmt !== null
           ? '<b>Format ' + (fmt + 1) + ': ' + esc(F[fmt][0]) + '</b>' + esc(F[fmt][2][cur]) + '<small>' + esc(F[fmt][1]) + (half ? ' · nur die ersten 5 Min.' : '') + '</small>'
-          : 'Noch kein Format gewürfelt (Uhr gibt den Takt, Rekord zählen).') +
+          : 'Noch kein Format gewählt (Uhr gibt den Takt, Rekord zählen).') +
+        (st.dayCfg.gameCustom ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bd);font-size:14px"><b>Heute angepasst:</b> ' + esc(st.dayCfg.gameCustom) + '</div>' : '') +
         '</div>' +
-        '<div class="row" style="margin-top:8px">' +
+        '<div class="row" style="margin-top:8px;align-items:center">' +
           '<button id="roll"' + (fmt !== null && rerollsLeft <= 0 ? ' disabled' : '') + '>' + rerollLabel + '</button>' +
+          fmtSelect +
         '</div>';
     }
 
     h += blk(
       sp ? (half ? "5 Min." : "10 Min.") : "–",
       "Spiel (" + esc(TYPES[cur]) + ")",
-      sp ? "Version passend zur Spiel-Rotation, Format per Würfel." : "entfällt in dieser Größe (Fokus auf Skills)",
+      sp ? "Version passend zur Spiel-Rotation – würfeln oder direkt wählen." : "entfällt in dieser Größe (Fokus auf Skills)",
       !sp,
       extra
     );
@@ -755,6 +904,59 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
 
     $("plan").innerHTML = h;
 
+    var twBtn = $("toggleDayTweak");
+    if (twBtn) {
+      twBtn.onclick = function(){
+        showDayTweak = !showDayTweak;
+        plan();
+      };
+    }
+    var cfgP = $("cfgPistol");
+    if (cfgP) {
+      cfgP.onchange = function(){
+        st.dayCfg.pistolWeight = cfgP.value;
+        save();
+        plan();
+        renderNoteChips();
+      };
+    }
+    var cfgH = $("cfgHs");
+    if (cfgH) {
+      cfgH.onchange = function(){
+        st.dayCfg.hsFocus = cfgH.value;
+        save();
+        plan();
+      };
+    }
+    var cfgA = $("cfgAddon");
+    if (cfgA) {
+      cfgA.onchange = function(){
+        st.dayCfg.noteAddon = cfgA.value.trim();
+        save();
+        plan();
+      };
+    }
+    var cfgG = $("cfgGame");
+    if (cfgG) {
+      cfgG.onchange = function(){
+        st.dayCfg.gameCustom = cfgG.value.trim();
+        save();
+        plan();
+      };
+    }
+
+    function applyFormatSelection(idx){
+      fmt = idx;
+      var fName = F[fmt][0].toLowerCase();
+      if (fName.indexOf("emom") > -1) setTimerMode("emom");
+      else if (fName.indexOf("tabata") > -1) setTimerMode("tabata");
+      else if (fName.indexOf("parcours") > -1) setTimerMode("up");
+      else setTimerMode("amrap");
+      plan();
+      renderEditor();
+      renderNoteChips();
+    }
+
     var r = $("roll");
     if (r) {
       r.onclick = function(){
@@ -762,14 +964,14 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
         if (fmt !== null) rerollsLeft--;
         var x;
         do { x = Math.floor(Math.random() * F.length); } while (x === fmt && F.length > 1);
-        fmt = x;
-        var fName = F[fmt][0].toLowerCase();
-        if (fName.indexOf("emom") > -1) setTimerMode("emom");
-        else if (fName.indexOf("tabata") > -1) setTimerMode("tabata");
-        else if (fName.indexOf("parcours") > -1) setTimerMode("up");
-        else setTimerMode("amrap");
-        plan();
-        renderEditor();
+        applyFormatSelection(x);
+      };
+    }
+    var pFmt = $("pickFmt");
+    if (pFmt) {
+      pFmt.onchange = function(){
+        if (pFmt.value === "") return;
+        applyFormatSelection(parseInt(pFmt.value, 10));
       };
     }
   }
@@ -914,13 +1116,25 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
   }
 
   function add(t){
-    st.log.push({
+    var F = getF();
+    var fmtLabel = (t === cur && fmt !== null && F[fmt]) ? F[fmt][0] : "";
+    var customSummary = [];
+    if (t === cur) {
+      if (st.dayCfg.noteAddon) customSummary.push("Skill: " + st.dayCfg.noteAddon);
+      if (st.dayCfg.gameCustom) customSummary.push("Spiel: " + st.dayCfg.gameCustom);
+    }
+    var entry = {
       d: dk(new Date()),
       t: t,
       s: t === cur ? size : 0,
       g: feel,
-      n: $("note").value.trim().slice(0, 160)
-    });
+      fmt: fmtLabel,
+      pistol: (t === cur) ? st.dayCfg.pistolWeight : "",
+      hs: (t === cur) ? st.dayCfg.hsFocus : "",
+      custom: customSummary.join(" | "),
+      n: $("note").value.trim().slice(0, 2400)
+    };
+    st.log.push(entry);
     if (st.log.length > 500) st.log = st.log.slice(-500);
     save();
     feel = 0;
@@ -931,7 +1145,366 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
     toast("Einheit gespeichert ✓");
     draw();
     window.scrollTo({top:0, behavior:"smooth"});
+
+    /* Automatisch an Google Docs & GitHub übertragen, falls eingerichtet */
+    if (isGdocConfigured()) {
+      syncEntryToGoogleDocs(entry, false);
+    }
+    if (isGhConfigured()) {
+      syncEntryToGitHub(entry);
+    }
   }
+
+  /* Schnell-Bausteine für das große Logbuch-Textfeld */
+  function renderNoteChips(){
+    var wrap = $("noteChips");
+    if (!wrap) return;
+    wrap.innerHTML = "";
+    var F = getF();
+    var fmtName = (fmt !== null && F[fmt]) ? F[fmt][0] : "Spiel";
+    var chips = [
+      {label: "+ 3-Zeilen-Vorlage", text: "Skill: Pistol (" + st.dayCfg.pistolWeight + ") 3×4/Bein · Handstand: \n" + fmtName + ": \nNotiz: "},
+      {label: "+ Pistol " + st.dayCfg.pistolWeight, text: "Pistol (" + st.dayCfg.pistolWeight + "): "},
+      {label: "+ Handstand", text: "Handstand: "},
+      {label: "+ Runden/Zeit", text: fmtName + " Ergebnis: "}
+    ];
+    chips.forEach(function(ch){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip";
+      b.textContent = ch.label;
+      b.onclick = function(){
+        var ta = $("note");
+        var curVal = ta.value;
+        ta.value = curVal ? (curVal + (curVal.slice(-1) === "\n" ? "" : "\n") + ch.text) : ch.text;
+        ta.focus();
+      };
+      wrap.appendChild(b);
+    });
+  }
+
+  /* =========================================================
+     GOOGLE DOCS AUTO-SYNC (via Google Apps Script Web-App)
+     Überträgt jedes Training direkt in dein bestehendes Doc
+     ========================================================= */
+  function isGdocConfigured(){
+    return Boolean(st.gdoc && st.gdoc.url && st.gdoc.url.indexOf("https://script.google.com/") === 0);
+  }
+
+  function updateGdocBadge(state, customText){
+    var el = $("gdocStatusBadge");
+    if (!el) return;
+    el.className = "sync-pill";
+    if (!isGdocConfigured()) {
+      el.textContent = "Docs: Aus";
+      return;
+    }
+    if (state === "syncing") {
+      el.textContent = customText || "Docs: Sendet…";
+    } else if (state === "err") {
+      el.classList.add("err");
+      el.textContent = customText || "Docs: Fehler";
+    } else {
+      el.classList.add("ok");
+      el.textContent = customText || "Docs: Verbunden";
+    }
+  }
+
+  function syncEntryToGoogleDocs(entry, isTest){
+    if (!isGdocConfigured()) return;
+    updateGdocBadge("syncing", "Docs: Überträgt…");
+    var dt = new Date(entry.d + "T12:00:00").toLocaleDateString("de-DE", {
+      weekday: "short", day: "2-digit", month: "2-digit", year: "numeric"
+    });
+    var payload = {
+      date: dt,
+      isoDate: entry.d,
+      title: TYPES[entry.t] || BONUS[entry.t] || entry.t,
+      minutes: entry.s || 0,
+      format: entry.fmt || "",
+      pistol: entry.pistol || "",
+      hs: entry.hs || "",
+      custom: entry.custom || "",
+      feel: entry.g || 0,
+      note: entry.n || "",
+      isTest: Boolean(isTest)
+    };
+
+    /* text/plain vermeidet CORS-Preflight bei Google Apps Script Web-Apps */
+    fetch(st.gdoc.url.trim(), {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    }).then(function(){
+      updateGdocBadge("ok", "Docs: Übertragen ✓");
+      if (isTest) {
+        $("gdocTestInfo").textContent = "Gesendet! Schau kurz in dein Google Doc – der Eintrag sollte jetzt ganz oben stehen.";
+        toast("Test an Google Docs gesendet ✓");
+      } else {
+        toast("In Google Docs eingetragen ✓");
+      }
+    }).catch(function(err){
+      updateGdocBadge("err", "Docs: Fehler");
+      if (isTest) {
+        $("gdocTestInfo").textContent = "Netzwerkfehler beim Senden (" + err.message + ").";
+      }
+      toast("Google Docs Sync fehlgeschlagen");
+    });
+  }
+
+  $("gdocToggleBtn").onclick = function(){
+    showGdocBox = !showGdocBox;
+    $("gdocBox").classList.toggle("hidden", !showGdocBox);
+    if (showGdocBox) {
+      $("gdocUrl").value = st.gdoc.url || "";
+    }
+  };
+
+  $("gdocSaveBtn").onclick = function(){
+    var url = $("gdocUrl").value.trim();
+    st.gdoc.url = url;
+    save();
+    if (!url) {
+      updateGdocBadge();
+      $("gdocTestInfo").textContent = "Google Docs Sync deaktiviert.";
+      return;
+    }
+    if (url.indexOf("https://script.google.com/") !== 0) {
+      updateGdocBadge("err", "Docs: Ungültige URL");
+      $("gdocTestInfo").textContent = "Bitte die vollständige URL einfügen (beginnt mit https://script.google.com/macros/s/...).";
+      return;
+    }
+    syncEntryToGoogleDocs({
+      d: dk(new Date()),
+      t: cur,
+      s: size,
+      g: 5,
+      fmt: "Verbindungstest",
+      pistol: st.dayCfg.pistolWeight,
+      hs: st.dayCfg.hsFocus,
+      custom: "",
+      n: "Verbindungstest aus der Nordstern-App erfolgreich."
+    }, true);
+  };
+
+  $("gdocSyncLastBtn").onclick = function(){
+    if (!isGdocConfigured()) {
+      toast("Bitte erst die Google Apps Script URL speichern");
+      return;
+    }
+    if (!st.log.length) {
+      toast("Noch kein Eintrag im Logbuch vorhanden");
+      return;
+    }
+    syncEntryToGoogleDocs(st.log[st.log.length - 1], false);
+  };
+
+  /* =========================================================
+     GITHUB MARKDOWN LOGBUCH SYNC (GitHub Contents API)
+     Schreibt jeden Eintrag sauber formatiert in logbuch.md
+     ========================================================= */
+  function isGhConfigured(){
+    return Boolean(st.gh && st.gh.repo && st.gh.path && st.gh.token);
+  }
+
+  function updateGhBadge(state, customText){
+    var el = $("ghStatusBadge");
+    if (!el) return;
+    el.className = "sync-pill";
+    if (!isGhConfigured()) {
+      el.textContent = "GitHub: Aus";
+      return;
+    }
+    if (state === "syncing") {
+      el.textContent = customText || "GitHub: Sync…";
+    } else if (state === "err") {
+      el.classList.add("err");
+      el.textContent = customText || "GitHub: Fehler";
+    } else {
+      el.classList.add("ok");
+      el.textContent = customText || "GitHub: Verbunden";
+    }
+  }
+
+  function utf8ToB64(str){
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+  function b64ToUtf8(b64){
+    return decodeURIComponent(escape(atob(b64.replace(/\s/g, ""))));
+  }
+
+  function formatEntryMarkdown(e){
+    var dt = new Date(e.d + "T12:00:00").toLocaleDateString("de-DE", {
+      weekday: "short", day: "2-digit", month: "2-digit", year: "numeric"
+    });
+    var title = TYPES[e.t] || BONUS[e.t] || e.t;
+    var meta = [];
+    if (e.s) meta.push(e.s + " Min.");
+    if (e.fmt) meta.push("Format: " + e.fmt);
+    if (e.pistol) meta.push("Pistol: " + e.pistol);
+    if (e.g) meta.push("Gefühl: " + e.g + "/5");
+
+    var md = "### " + dt + " – " + title + "\n";
+    if (meta.length) md += "*" + meta.join(" · ") + "*\n\n";
+    if (e.n) {
+      md += e.n.split("\n").map(function(line){ return "- " + line; }).join("\n") + "\n";
+    } else {
+      md += "- *(Abgehakt ohne weitere Notiz)*\n";
+    }
+    return md + "\n---\n\n";
+  }
+
+  function ghApiRequest(method, bodyObj){
+    var repo = st.gh.repo.trim();
+    var path = st.gh.path.trim().replace(/^\/+/, "");
+    var branch = (st.gh.branch || "main").trim();
+    var url = "https://api.github.com/repos/" + repo + "/contents/" + encodeURI(path) + (method === "GET" ? "?ref=" + encodeURIComponent(branch) : "");
+    var opts = {
+      method: method,
+      headers: {
+        "Authorization": "Bearer " + st.gh.token.trim(),
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+      }
+    };
+    if (bodyObj) {
+      opts.headers["Content-Type"] = "application/json";
+      opts.body = JSON.stringify(bodyObj);
+    }
+    return fetch(url, opts);
+  }
+
+  function syncEntryToGitHub(entry){
+    updateGhBadge("syncing", "GitHub: Speichert…");
+    var branch = (st.gh.branch || "main").trim();
+    var newBlock = formatEntryMarkdown(entry);
+
+    ghApiRequest("GET")
+      .then(function(res){
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      })
+      .then(function(fileData){
+        var header = "# Nordstern Trainings-Logbuch\n\n*Automatisch synchronisiert aus der Nordstern-App – direkt bearbeitbar.*\n\n---\n\n";
+        var updatedContent = "";
+        var sha = undefined;
+
+        if (fileData && fileData.content) {
+          sha = fileData.sha;
+          var existing = b64ToUtf8(fileData.content);
+          /* Neuesten Eintrag direkt unter die Überschrift (oder ans Ende) setzen */
+          var marker = "---\n\n";
+          var idx = existing.indexOf(marker);
+          if (idx > -1 && existing.indexOf("# Nordstern") === 0) {
+            var headPart = existing.slice(0, idx + marker.length);
+            var restPart = existing.slice(idx + marker.length);
+            updatedContent = headPart + newBlock + restPart;
+          } else {
+            updatedContent = existing + (existing.slice(-1) === "\n" ? "\n" : "\n\n") + newBlock;
+          }
+        } else {
+          updatedContent = header + newBlock;
+        }
+
+        var putBody = {
+          message: "Logbuch: " + entry.d + " (" + (TYPES[entry.t] || BONUS[entry.t] || entry.t) + ")",
+          content: utf8ToB64(updatedContent),
+          branch: branch
+        };
+        if (sha) putBody.sha = sha;
+        return ghApiRequest("PUT", putBody);
+      })
+      .then(function(putRes){
+        if (!putRes.ok) throw new Error("Write HTTP " + putRes.status);
+        updateGhBadge("ok", "GitHub: Synchronisiert ✓");
+        toast("In GitHub (" + st.gh.path + ") gespeichert ✓");
+      })
+      .catch(function(err){
+        updateGhBadge("err", "GitHub: Sync-Fehler");
+        toast("GitHub-Sync fehlgeschlagen (" + err.message + ")");
+      });
+  }
+
+  function syncFullLogToGitHub(){
+    if (!isGhConfigured()) {
+      toast("Bitte erst Repo und Token eintragen");
+      return;
+    }
+    updateGhBadge("syncing", "GitHub: Exportiere…");
+    var branch = (st.gh.branch || "main").trim();
+    var header = "# Nordstern Trainings-Logbuch\n\n*Automatisch synchronisiert aus der Nordstern-App – direkt bearbeitbar.*\n\n---\n\n";
+    var allBlocks = st.log.slice().reverse().map(formatEntryMarkdown).join("");
+    var fullText = header + allBlocks;
+
+    ghApiRequest("GET")
+      .then(function(res){
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      })
+      .then(function(fileData){
+        var putBody = {
+          message: "Nordstern Logbuch Komplett-Sync (" + st.log.length + " Einträge)",
+          content: utf8ToB64(fullText),
+          branch: branch
+        };
+        if (fileData && fileData.sha) putBody.sha = fileData.sha;
+        return ghApiRequest("PUT", putBody);
+      })
+      .then(function(putRes){
+        if (!putRes.ok) throw new Error("HTTP " + putRes.status);
+        updateGhBadge("ok", "GitHub: Verbunden ✓");
+        $("ghTestInfo").textContent = "Erfolgreich! Alle " + st.log.length + " Einträge wurden nach " + st.gh.path + " geschrieben.";
+        toast("Komplettes Logbuch auf GitHub aktualisiert ✓");
+      })
+      .catch(function(err){
+        updateGhBadge("err", "GitHub: Fehler");
+        $("ghTestInfo").textContent = "Fehler beim Zugriff auf GitHub (" + err.message + "). Prüfe Repo-Name, Branch und Token-Rechte (Contents: Read & Write).";
+      });
+  }
+
+  $("ghToggleBtn").onclick = function(){
+    showGhBox = !showGhBox;
+    $("ghBox").classList.toggle("hidden", !showGhBox);
+    if (showGhBox) {
+      $("ghRepo").value = st.gh.repo;
+      $("ghPath").value = st.gh.path || "logbuch.md";
+      $("ghBranch").value = st.gh.branch || "main";
+      $("ghToken").value = st.gh.token;
+    }
+  };
+
+  $("ghSaveBtn").onclick = function(){
+    st.gh.repo = $("ghRepo").value.trim();
+    st.gh.path = $("ghPath").value.trim() || "logbuch.md";
+    st.gh.branch = $("ghBranch").value.trim() || "main";
+    st.gh.token = $("ghToken").value.trim();
+    save();
+    if (!isGhConfigured()) {
+      updateGhBadge();
+      $("ghTestInfo").textContent = "GitHub-Sync deaktiviert (Felder unvollständig).";
+      return;
+    }
+    $("ghTestInfo").textContent = "Prüfe Verbindung zu " + st.gh.repo + "…";
+    fetch("https://api.github.com/repos/" + st.gh.repo, {
+      headers: {
+        "Authorization": "Bearer " + st.gh.token,
+        "Accept": "application/vnd.github+json"
+      }
+    }).then(function(res){
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      updateGhBadge("ok", "GitHub: Verbunden ✓");
+      $("ghTestInfo").textContent = "Verbindung steht! Neue Trainings werden ab sofort automatisch in „" + st.gh.path + "“ geschrieben.";
+      toast("GitHub verbunden ✓");
+    }).catch(function(err){
+      updateGhBadge("err", "GitHub: Fehler");
+      $("ghTestInfo").textContent = "Repository nicht erreichbar (" + err.message + "). Prüfe Repo-Name und Token.";
+    });
+  };
+
+  $("ghSyncAllBtn").onclick = syncFullLogToGitHub;
 
   function hist(){
     var h = $("hist");
@@ -944,7 +1517,11 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
     l.forEach(function(e){
       var dt = new Date(e.d + "T12:00:00").toLocaleDateString("de-DE", {weekday:"short", day:"numeric", month:"numeric"});
       var name = TYPES[e.t] || BONUS[e.t] || e.t;
-      var meta = (e.s ? e.s + " Min." : "") + (e.g ? (e.s ? " · " : "") + "Gefühl " + e.g + "/5" : "");
+      var metaParts = [];
+      if (e.s) metaParts.push(e.s + " Min.");
+      if (e.fmt) metaParts.push(e.fmt);
+      if (e.g) metaParts.push("Gefühl " + e.g + "/5");
+      var meta = metaParts.join(" · ");
       var div = document.createElement("div");
       div.className = "log";
       var a = document.createElement("div");
@@ -954,6 +1531,7 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
       if (e.n) {
         a.appendChild(document.createElement("br"));
         var s = document.createElement("small");
+        s.style.whiteSpace = "pre-line";
         s.textContent = e.n;
         a.appendChild(s);
       }
@@ -1020,6 +1598,9 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
 
     plan();
     renderEditor();
+    renderNoteChips();
+    updateGdocBadge();
+    updateGhBadge();
 
     var fe = $("feel");
     fe.innerHTML = "";
