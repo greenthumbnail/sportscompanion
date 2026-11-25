@@ -37,6 +37,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)
 .sub{color:var(--mut);font-size:14px;margin:0}
 button{font:inherit;color:var(--tx);background:var(--dim);border:1px solid var(--bd);border-radius:12px;padding:10px 14px;min-height:44px;cursor:pointer;transition:transform .08s,background .15s}
 button:active{transform:scale(.98)}
+button:disabled{opacity:.45;cursor:not-allowed;transform:none}
 button.sel{background:var(--acbg);border-color:var(--ac);color:var(--ac);font-weight:600}
 button.pri{background:var(--ac);border-color:var(--ac);color:var(--bg);font-weight:700;width:100%}
 button.sm{padding:6px 10px;min-height:34px;font-size:13px;border-radius:10px}
@@ -50,11 +51,17 @@ button.warn{background:var(--warnbg);border-color:var(--warn);color:var(--warn)}
 .blk-body{flex:1;min-width:0}
 .blk b{display:block;margin-bottom:2px}
 .blk span{color:var(--mut);font-size:15px;display:block}
+.skill-list{margin:6px 0 0;padding-left:18px;color:var(--mut);font-size:14px}
+.skill-list li{margin-bottom:4px}
+.skill-list strong{color:var(--tx);font-weight:600}
+.hint-pill{display:inline-block;background:var(--acbg);color:var(--ac);font-size:12px;font-weight:600;padding:3px 8px;border-radius:8px;margin-top:6px}
 .last-note{background:var(--dim);border-left:3px solid var(--ac);border-radius:8px;padding:7px 10px;margin-top:8px;font-size:14px;color:var(--tx)}
 .last-note small{color:var(--mut);display:block;font-size:12px;margin-bottom:2px}
 .fmt{background:var(--acbg);border-radius:12px;padding:10px 12px;margin-top:8px;color:var(--tx)}
 .fmt b{color:var(--ac);margin-bottom:4px}
 .fmt small{display:block;color:var(--mut);margin-top:4px;font-size:13px}
+.bonus-info{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:14px}
+.bonus-info b{color:var(--ac);display:block;margin-bottom:4px}
 .feel button{flex:1;padding:10px 0}
 input[type="text"],textarea{font:inherit;width:100%;padding:11px;border-radius:12px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);margin:8px 0}
 textarea{min-height:74px;resize:vertical;line-height:1.4}
@@ -64,7 +71,7 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
 .link{background:none;border:0;color:var(--mut);padding:6px 0;min-height:36px;text-decoration:underline;font-size:14px}
 
 /* Timer UI */
-.timer-box{background:var(--bg);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:10px}
+.timer-box{background:var(--bg);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:4px}
 .timer-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
 .timer-clock{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--ac);line-height:1.1}
 .timer-badge{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:4px 8px;border-radius:8px;background:var(--acbg);color:var(--ac)}
@@ -98,10 +105,10 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
   <!-- Kopfzeile mit Datum und Theme-Toggle -->
   <div class="hdr">
     <div>
-      <h1>Heute</h1>
+      <h1>Nordstern: Heute</h1>
       <p class="date" id="date"></p>
     </div>
-    <button class="icon-btn" id="themeBtn" aria-label="Farbschema wechseln">Auto</button>
+    <button class="icon-btn" id="themeBtn" aria-label="Farbschema wechseln">Theme: Auto</button>
   </div>
 
   <!-- Wochenfortschritt & Streak -->
@@ -114,9 +121,9 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
     <p class="sub" id="wk" style="margin-top:8px"></p>
   </div>
 
-  <!-- Trainingsauswahl -->
+  <!-- Trainingsauswahl (Rotation nur fürs Spiel: OK -> UK -> GK) -->
   <div class="card">
-    <h2>Dran ist</h2>
+    <h2>Dran ist (Spiel-Rotation)</h2>
     <p class="big" id="next"></p>
     <p class="sub" id="nextsub"></p>
     <div class="row" id="types" style="margin-top:10px"></div>
@@ -126,6 +133,7 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
   <div class="card">
     <h2>Wie viel Zeit?</h2>
     <div class="seg" id="sizes"></div>
+    <p class="sub" id="sizeHint" style="margin-top:8px;font-size:13px"></p>
   </div>
 
   <!-- Integrierter Workout-Timer -->
@@ -137,10 +145,10 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
     <div class="timer-presets" id="timerPresets"></div>
     <div class="timer-box">
       <div class="timer-top">
-        <div class="timer-clock" id="tClock">00:45</div>
+        <div class="timer-clock" id="tClock">02:30</div>
         <span class="timer-badge" id="tBadge">Bereit</span>
       </div>
-      <div class="timer-sub" id="tInfo">45 Sek. Countdown (z. B. tiefe Hocke / Holds)</div>
+      <div class="timer-sub" id="tInfo">2:30 Min. Skill-Runde (4 Runden = 10 Min.)</div>
       <div class="timer-ctrl">
         <button class="sel" id="tStart">Start</button>
         <button id="tReset">Reset</button>
@@ -152,7 +160,7 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
   <!-- Trainingsablauf + Kontext-Notiz + Editor-Toggle -->
   <div class="card">
     <div class="card-hdr">
-      <h2>Ablauf</h2>
+      <h2>Ablauf (30-Min.-Gerüst)</h2>
       <button class="sm" id="editToggleBtn">Plan anpassen</button>
     </div>
     <div id="plan"></div>
@@ -165,7 +173,7 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
     <h2>Abschluss und Logbuch</h2>
     <p class="sub" style="margin-bottom:6px">Wie hat es sich angefühlt? (1 = zäh, 5 = stark)</p>
     <div class="row feel" id="feel"></div>
-    <input id="note" type="text" placeholder="Skill-Stand, Gewicht, Runden oder Zeit (optional)" maxlength="140">
+    <input id="note" type="text" placeholder="Zeile 1–2: Skill-Stand & Spiel-Ergebnis (Runden/Zeit)" maxlength="160">
     <button class="pri" id="done">Einheit abhaken</button>
   </div>
 
@@ -173,6 +181,7 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
   <div class="card">
     <h2>Bonus (zählt nicht fürs Wochenziel)</h2>
     <div class="row" id="bonus"></div>
+    <div id="bonusDetails" class="bonus-info hidden"></div>
   </div>
 
   <!-- Statistik & Verteilung -->
@@ -209,61 +218,87 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
 
 <script>
 (function(){
-  var KEY = "nordstern-v2";
-  var OLD_KEY = "nordstern-v1";
-  var TYPES = {uk:"Unterkörper-Skill", ok:"Oberkörper-Skill", gk:"Ganzkörper-Spiel"};
-  var ORDER = ["uk","ok","gk"];
-  var BONUS = {flow:"Flow und Mobilität", trail:"Trail draußen", out:"Draußen und frei"};
+  /* Neuer Storage-Key für Nordstern Stand 24.11.2026 mit automatischer Log-Migration */
+  var KEY = "nordstern-v3";
+  var OLD_KEYS = ["nordstern-v2", "nordstern-v1"];
 
-  /* Standard-Trainingsdaten (können im Editor angepasst werden) */
-  var DEFAULT_DATA = {
-    uk:{
-      ritual:"90/90 Hip Switches 1 × 8, Hüft- und Knie-CARs je 3 langsame Rotationen, tiefe Hocke 45 Sek.",
-      skill:"Pistol Squat mit Gegengewicht: 3 Sek. absenken, 5 Sek. unten halten, 3–5 Wdh. pro Bein. Zum Schluss 1 Satz Sissy Squats mit Hilfe.",
-      end:"Hüftbeuger-Stretch 60 Sek. pro Seite, 90/90-Lagerung 2 Min."
+  /* Rotation nur fürs Spiel: Oberkörper-Spiel -> Unterkörper-Spiel -> Ganzkörper-Spiel */
+  var TYPES = {
+    ok: "Oberkörper-Spiel",
+    uk: "Unterkörper-Spiel",
+    gk: "Ganzkörper-Spiel"
+  };
+  var ORDER = ["ok", "uk", "gk"];
+
+  var BONUS = {
+    flow: "Flow und Mobilität",
+    trail: "Trail draußen",
+    out: "Draußen und frei"
+  };
+
+  var BONUS_GUIDE = {
+    flow: {
+      title: "Flow und Mobilität (ca. 20–30 Min., Fluss mit Musik)",
+      text: "Basis-CARs 3 Min. (Nacken, Schultern, Wirbelsäule, Hüften) · 90/90 Hip Switches 2 × 8 mit 5 Sek. Isometrie · tiefe Hocke 3 Min. gesamt mit Gewichtsverlagerung · Thread the Needle 5–8/Seite · Band-Dislocations 2 × 12 · Dead Hangs 3 × 30–60 Sek. (4 Sek. ein, 6–8 Sek. aus) · 2 Min. 90/90-Lagerung."
     },
-    ok:{
-      ritual:"Katze-Kuh und Schulter-CARs 5–8, Band Pull-Aparts 1 × 15, Scapular Pull-ups 1 × 6–8.",
-      skill:"Pike Push-ups (Füße am Boden) 3–5 Wdh. pro Runde, Wand-Handstand 3 × 15–20 Sek., negative Handstand-Liegestütze 3 × 2 mit 3 Sek. Absenken. Mit Zeit: Klimmzüge 2 × 3–4 oder Tuck Front Lever Hold 3 × 8–10 Sek.",
-      end:"Thread the Needle und Chin Tucks."
+    trail: {
+      title: "Trail draußen (20–25 Min. → Ziel 40 Min.)",
+      text: "5 Min. Lauf-ABC · ca. 25 Min. Trail mit Fartlek („bis zum nächsten Baum schneller“, 20–30 Sek. zügig, dann locker), optional 4–6 kurze Hügelsprints · Zum Schluss 2 × 10 einbeinige Wadenheben langsam (Tempo 5-1-X) und Hüftbeuger-Stretch."
     },
-    gk:{
-      ritual:"Ober- oder Unterkörper-Ritual, je nachdem, was sich besser anfühlt.",
-      skill:"Pistol oder Handstand, nach Lust.",
-      end:"Stretch nach Gefühl."
+    out: {
+      title: "Draußen und frei / Pausentag",
+      text: "Bouldern, Brettsport oder eine Wanderung. Mindestens ein Tag pro Woche bleibt komplett frei (optional 3 × 30 Sek. Dead Hang)."
     }
   };
 
+  /* Standard-Trainingsdaten nach Nordstern Stand 24.11.2026 */
+  var DEFAULT_DATA = {
+    ritual: "Immer beides (je ca. 2,5 Min.): Unterkörper: 90/90 Hip Switches 1 × 8, Hüft- und Knie-CARs je 3 langsame Rotationen, tiefe Hocke 45 Sek. · Oberkörper: Katze-Kuh und Schulter-CARs 5–8, Band Pull-Aparts 1 × 15, Scapular Pull-ups 1 × 6–8.",
+    skillPistol: "Pistol Squat: 4 kg Gegengewicht (Abbau 5,5 → 4 → 3 → 2 kg ab 5 sauberen Wdh.), 3 Sek. absenken, 5 Sek. unten halten, 3–4 Wdh. pro Bein. Letzte Runde ggf. Sissy Squats mit Hilfe.",
+    skillHandstand: "Handstand-Linie im Wechsel: Pike Push-ups (Füße am Boden) 3–5 Wdh., Wand-Handstand (Bauch zur Wand) 15–20 Sek. (Ziel 30 Sek.), negative Handstand-Liegestütze 2 Wdh. mit 3 Sek. Absenken.",
+    skillDist: {
+      ok: "Verteilung heute: Pistol Squat 4 Durchgänge · Handstand-Linie 2–3 Durchgänge (Negative weglassen).",
+      uk: "Verteilung heute: Pistol Squat 2–3 Durchgänge (Sissy Squats weglassen) · Handstand-Linie 4 Durchgänge.",
+      gk: "Verteilung heute: Beide Skills 3–4 Durchgänge im Wechsel (alle 2:30 Min. eine Runde)."
+    },
+    end: {
+      ok: "Thread the Needle und Chin Tucks (je ca. 60 Sek./Seite), halbkniender Hüftbeuger-Stretch. Bei Rückenbedarf: 2–3 Min. 90/90-Lagerung auf dem Rücken.",
+      uk: "Halbkniender Hüftbeuger-Stretch 60 Sek. pro Seite, 90/90-Lagerung 2 Min. mit tiefer Bauchatmung, Thread the Needle.",
+      gk: "Halbkniender Hüftbeuger-Stretch, Pigeon oder 90/90, Thread the Needle (je ca. 60 Sek. pro Seite)."
+    }
+  };
+
+  /* Abschnitt 11: Spiel-Formate als Oberkörper-, Unterkörper- und Ganzkörper-Version */
   var DEFAULT_F = [
-    ["EMOM","10 Min., drei Stationen im Kreis, Minute 10 frei",
+    ["EMOM", "10 Min., drei Stationen im Kreis, Minute 10 frei",
       {ok:"Min. 1: 4 Klimmzüge. Min. 2: 5 Dips mit gelbem Band. Min. 3: 8 Pallof Press pro Seite.",
        uk:"Min. 1: 5 Bulgarian Split Squats pro Bein. Min. 2: 6 Reverse Nordic Curls. Min. 3: 8 Pallof Press pro Seite.",
        gk:"Min. 1: 4 Klimmzüge. Min. 2: 5 Bulgarian Split Squats pro Bein. Min. 3: 6 Body Saw."}],
-    ["AMRAP","Runden zählen",
+    ["AMRAP", "10 Min., Runden zählen",
       {ok:"3 Klimmzüge, 5 Dips mit gelbem Band, 6 Ring-Rudern, Long Lever Plank 20 Sek.",
        uk:"5 Bulgarian Split Squats pro Bein, 6 Reverse Nordic Curls, 10 einbeinige Wadenheben, 8 Pallof Press pro Seite.",
        gk:"3 Klimmzüge, 5 Bulgarian Split Squats pro Bein, 5 Pike Push-ups, 6 Ring-Fallouts."}],
-    ["Flow","Kette ohne Pause, dann von vorn",
-      {ok:"6 Ring-Rudern, Dip-Position 5 Sek., 5 Ring-Liegestütze, Tuck Front Lever Hold 8 Sek., Dead Hang 15 Sek.",
+    ["Flow", "10 Min., Kette ohne Pause, Tempo pro Runde steigern",
+      {ok:"6 Ring-Rudern, Dip-Position 5 Sek. halten, 5 Ring-Liegestütze, Tuck Front Lever Hold 8 Sek., Dead Hang 15 Sek.",
        uk:"Tiefe Hocke 10 Sek., 4 Skater Squats pro Bein, 8 Single-Leg RDLs pro Bein mit Band, kleiner Sprung, Seitstütz 15 Sek. pro Seite.",
        gk:"6 Ring-Rudern, Dip-Position 5 Sek., tiefe Hocke 10 Sek., kleiner Sprung, Dead Hang 15 Sek., Seitstütz 15 Sek. pro Seite."}],
-    ["Schlingen-und-Ringe-Tabata","20 Sek. Arbeit, 10 Sek. Pause, 2 Durchgänge à 8 Runden",
+    ["Schlingen-und-Ringe-Tabata", "20 Sek. Arbeit, 10 Sek. Pause · 2 Durchgänge à 8 Runden",
       {ok:"Durchgang 1: Ring-Rudern und Ring-Liegestütze. Durchgang 2: Pike Push-ups und Body Saw.",
-       uk:"Durchgang 1: Ring Hamstring Curls und Skater Squats. Durchgang 2: einbeinige Wadenheben und Pallof Hold.",
+       uk:"Durchgang 1: Ring Hamstring Curls und Skater Squats. Durchgang 2: einbeinige Wadenheben und Pallof Hold (isometrisch halten).",
        gk:"Durchgang 1: Ring-Rudern und Ring Hamstring Curls. Durchgang 2: Pike Push-ups und Body Saw."}],
-    ["Rückenfreundlicher Core-Flow","Runden zählen",
+    ["Rückenfreundlicher Core-Flow", "10 Min., langsam & kontrolliert, Runden zählen",
       {ok:"6 Ring-Fallouts, Tuck Front Lever Hold 8 Sek., 8 Pallof Press pro Seite, Seitstütz 20 Sek. pro Seite.",
        uk:"8 Dead Bugs pro Seite, 6 Long Lever Bridge, 8 Pallof Press pro Seite, Seitstütz 20 Sek. pro Seite.",
        gk:"6 Body Saw, 8 Band-Chops pro Seite, Long Lever Plank 25 Sek., 6 Long Lever Bridge."}],
-    ["Sprossenwand-Parcours","Kurze Pause zwischen den Durchgängen, beste Zeit notieren",
-      {ok:"Seitlich hängend traversieren, 3 Klimmzüge, Dip-Position 5 Sek., Dead Hang 15 Sek.",
+    ["Sprossenwand-Parcours", "10 Min., kurze Pause zwischen Durchgängen, Bestzeit notieren",
+      {ok:"Seitlich an der Sprossenwand hängend traversieren, 3 Klimmzüge, Dip-Position 5 Sek., Dead Hang 15 Sek.",
        uk:"Sprossenwand hochsteigen, abspringen, tiefe Hocke 10 Sek., 4 Skater Squats pro Bein, Seitstütz 15 Sek. pro Seite.",
        gk:"Seitlich traversieren, hochziehen, abspringen, tiefe Hocke 10 Sek., Seitstütz 15 Sek. pro Seite."}]
   ];
 
   function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
 
-  /* State laden + automatische Migration von nordstern-v1 */
+  /* State laden + automatische Migration älterer Logs */
   var st = {
     log: [],
     theme: "auto",
@@ -273,13 +308,20 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
   };
 
   try {
-    var raw = localStorage.getItem(KEY) || localStorage.getItem(OLD_KEY);
+    var raw = localStorage.getItem(KEY);
+    if (!raw) {
+      for (var i = 0; i < OLD_KEYS.length; i++) {
+        var oldRaw = localStorage.getItem(OLD_KEYS[i]);
+        if (oldRaw) { raw = oldRaw; break; }
+      }
+    }
     if (raw) {
       var p = JSON.parse(raw);
       if (p && Array.isArray(p.log)) st.log = p.log;
       if (p && (p.theme === "light" || p.theme === "dark" || p.theme === "auto")) st.theme = p.theme;
       if (p && typeof p.sound === "boolean") st.sound = p.sound;
-      if (p && p.customData) st.customData = p.customData;
+      /* customData nur übernehmen, wenn es bereits das v3-Format besitzt */
+      if (p && p.customData && typeof p.customData.ritual === "string") st.customData = p.customData;
       if (p && Array.isArray(p.customF)) st.customF = p.customF;
     }
   } catch (e) {}
@@ -345,14 +387,15 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
   }
   function weekStart(){ return weekStartFromDate(new Date()); }
   function core(){ return st.log.filter(function(e){ return ORDER.indexOf(e.t) > -1; }); }
+
+  /* Rotation: Oberkörper-Spiel -> Unterkörper-Spiel -> Ganzkörper-Spiel */
   function nextType(){
     var c = core();
-    if (!c.length) return "uk";
+    if (!c.length) return "ok";
     var i = ORDER.indexOf(c[c.length - 1].t);
     return ORDER[(i + 1) % 3];
   }
 
-  /* Berechnet Wochen-Streak (aufeinanderfolgende Wochen mit >= 3 Kerneinheiten) */
   function calcWeekStreak(){
     var c = core();
     if (!c.length) return 0;
@@ -374,7 +417,7 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
     return streak;
   }
 
-  /* Web Audio Synthesizer für Timer-Signale (keine externen MP3s nötig) */
+  /* Web Audio Synthesizer für Timer-Signale */
   var audioCtx = null;
   function beep(freq, dur, type, delay){
     if (!st.sound) return;
@@ -400,22 +443,22 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
   }
 
   /* =========================================================
-     TIMER ENGINE
-     Modi:
-     - "hold45": 45 Sek. Countdown (z.B. tiefe Hocke / Stretch)
+     TIMER ENGINE (passend zu Abschnitt 2, 4 & 5)
+     - "skill":  10 Min. mit 2:30-Min.-Runden-Signal (4 Runden im Wechsel)
+     - "hold45": 45 Sek. Countdown (tiefe Hocke / 60s Stretch)
      - "emom":   10 Min. (oder 5 Min. bei 20-Min-Session) Minuten-Gong
-     - "tabata": 20s Arbeit / 10s Pause (8 Runden pro Block)
-     - "amrap":  Countdown (10 Min. oder 5 Min.) + Rundenzähler
+     - "tabata": 20s Arbeit / 10s Pause (8 Runden)
+     - "amrap":  10 Min. (oder 5 Min.) + Rundenzähler
      - "up":     Stoppuhr aufwärts (z.B. Sprossenwand-Parcours)
      ========================================================= */
   var timer = {
-    mode: "hold45",
+    mode: "skill",
     running: false,
     interval: null,
-    sec: 45,
-    total: 45,
+    sec: 600,
+    total: 600,
     laps: 0,
-    phase: "work", // work | rest
+    phase: "work",
     round: 1,
     maxRounds: 8
   };
@@ -433,7 +476,10 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
     timer.round = 1;
     timer.phase = "work";
     var half = (size === 20);
-    if (mode === "hold45") {
+    if (mode === "skill") {
+      timer.total = (size === 10) ? 300 : 600;
+      timer.sec = timer.total;
+    } else if (mode === "hold45") {
       timer.total = 45;
       timer.sec = 45;
     } else if (mode === "emom") {
@@ -495,11 +541,18 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
       return;
     }
 
-    /* Countdown-Modi: hold45, emom, amrap */
     if (timer.sec > 1) {
       timer.sec--;
-      if (timer.mode === "emom") {
-        var elapsed = timer.total - timer.sec;
+      var elapsed = timer.total - timer.sec;
+
+      if (timer.mode === "skill") {
+        /* Alle 150 Sek. (2:30 Min.) Signal für nächste Doppel-Runde Pistol + Handstand */
+        if (elapsed > 0 && elapsed % 150 === 0) {
+          beep(784, 0.18, "triangle", 0);
+          beep(1046, 0.25, "triangle", 0.18);
+          toast("Nächste Skill-Runde!");
+        }
+      } else if (timer.mode === "emom") {
         var remInMin = 60 - (elapsed % 60);
         if (remInMin <= 3 && remInMin > 0) beep(440, 0.07, "sine", 0);
         if (elapsed > 0 && elapsed % 60 === 0) {
@@ -514,14 +567,15 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
       stopTimer();
       beep(880, 0.25, "triangle", 0);
       beep(1100, 0.35, "triangle", 0.28);
-      toast("Zeit abgelaufen!");
+      toast("Block fertig!");
     }
     renderTimer();
   }
 
   function renderTimer(){
     var presets = [
-      {id:"hold45", label:"45s Hold"},
+      {id:"skill",  label:(size===10?"5m":"10m")+" Skill"},
+      {id:"hold45", label:"45s Hocke"},
       {id:"emom",   label:(size===20?"5m":"10m")+" EMOM"},
       {id:"tabata", label:"Tabata 20/10"},
       {id:"amrap",  label:(size===20?"5m":"10m")+" AMRAP"},
@@ -543,13 +597,19 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
     badge.className = "timer-badge";
     lapBtn.classList.add("hidden");
 
-    if (timer.mode === "hold45") {
+    if (timer.mode === "skill") {
+      var totalR = Math.round(timer.total / 150);
+      var elapsed = timer.total - timer.sec;
+      var curR = Math.min(totalR, Math.floor(elapsed / 150) + 1);
+      badge.textContent = "Runde " + curR + "/" + totalR;
+      info.textContent = "Alle 2:30 Min. Signal: Pistol Squat & Handstand im Wechsel";
+    } else if (timer.mode === "hold45") {
       badge.textContent = timer.running ? "Läuft" : "Countdown";
-      info.textContent = "45 Sek. für tiefe Hocke, Stretches oder Isometrics";
+      info.textContent = "45 Sek. für tiefe Hocke im Ritual oder Stretches";
     } else if (timer.mode === "emom") {
       var totalMins = Math.round(timer.total / 60);
-      var elapsed = timer.total - timer.sec;
-      var curMin = Math.min(totalMins, Math.floor(elapsed / 60) + 1);
+      var elapsedM = timer.total - timer.sec;
+      var curMin = Math.min(totalMins, Math.floor(elapsedM / 60) + 1);
       var station = ((curMin - 1) % 3) + 1;
       badge.textContent = "Min. " + curMin + "/" + totalMins;
       info.textContent = (curMin === 10)
@@ -566,9 +626,9 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
       lapBtn.textContent = "+ Runde (" + timer.laps + ")";
     } else if (timer.mode === "up") {
       badge.textContent = "Stoppuhr";
-      info.textContent = "Für Parcours-Bestzeit oder freie Pausen";
+      info.textContent = "Für Sprossenwand-Parcours Bestzeit";
       lapBtn.classList.remove("hidden");
-      lapBtn.textContent = "Runde (" + timer.laps + ")";
+      lapBtn.textContent = "Durchgang (" + timer.laps + ")";
     }
 
     $("tStart").textContent = timer.running ? "Pause" : "Start";
@@ -604,14 +664,13 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
   var size = 30;
   var feel = 0;
   var fmt = null;
+  var rerollsLeft = 1; // Abschnitt 5: "Vom Würfel getroffene Formate dürfen einmal pro Einheit (vor dem Start) neu gewürfelt werden."
   var editing = false;
+  var activeBonusGuide = null;
 
-  /* Sucht letzten Logbuch-Eintrag für den aktuellen Typ (für Skill-Fortschritt) */
-  function lastEntryForType(typeKey){
-    for (var i = st.log.length - 1; i >= 0; i--) {
-      if (st.log[i].t === typeKey) return st.log[i];
-    }
-    return null;
+  function lastCoreEntry(){
+    var c = core();
+    return c.length ? c[c.length - 1] : null;
   }
 
   function blk(min, title, text, off, extra){
@@ -624,54 +683,73 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
   function plan(){
     var DATA = getData();
     var F = getF();
-    var d = DATA[cur];
     var h = "";
 
-    h += blk("5 Min.", "Ritual", esc(d.ritual));
+    /* 1. Ritual (5 Min. - immer beides: UK + OK je ca. 2,5 Min.) */
+    h += blk("5 Min.", "Ritual (UK + OK)", esc(DATA.ritual));
 
-    /* Letzte Notiz genau zu diesem Typ anzeigen */
-    var last = lastEntryForType(cur);
+    /* 2. Skill (10 Min. bzw. 5 Min. Mini-Version - IMMER beide Skills im Wechsel) */
+    var last = lastCoreEntry();
     var lastHtml = "";
     if (last && (last.n || last.g)) {
       var dtStr = new Date(last.d + "T12:00:00").toLocaleDateString("de-DE", {day:"numeric", month:"numeric"});
       var infoParts = [];
       if (last.n) infoParts.push(esc(last.n));
       if (last.g) infoParts.push("Gefühl " + last.g + "/5");
-      lastHtml = '<div class="last-note"><small>Zuletzt am ' + dtStr + ':</small>' + infoParts.join(" · ") + '</div>';
+      lastHtml = '<div class="last-note"><small>Letzte Kerneinheit am ' + dtStr + ' (' + esc(TYPES[last.t] || last.t) + '):</small>' + infoParts.join(" · ") + '</div>';
     }
+
+    var distText = (size === 10)
+      ? "Mini-Version (5 Min.): 2 Pistol-Durchgänge im Wechsel mit 2 Handstand-Durchgängen (je 2–3 Min.)."
+      : DATA.skillDist[cur];
+
+    var skillHtml =
+      '<ul class="skill-list">' +
+        '<li><strong>Unterkörper:</strong> ' + esc(DATA.skillPistol) + '</li>' +
+        '<li><strong>Oberkörper:</strong> ' + esc(DATA.skillHandstand) + '</li>' +
+      '</ul>' +
+      '<div class="hint-pill">' + esc(distText) + '</div>' +
+      lastHtml;
 
     h += blk(
       size === 10 ? "5 Min." : "10 Min.",
-      "Skill",
-      esc(d.skill) + (size === 10 ? " (nur 5 Min.: ein Fokus)" : ""),
+      "Skill (Pistol & Handstand im Wechsel)",
+      "Beide Skills in jeder Kerneinheit – während ein Skill ruht, arbeitet der andere.",
       false,
-      lastHtml
+      skillHtml
     );
 
+    /* 3. Spiel (10 Min. oder 5 Min. bei 20-Min.-Größe) */
     var sp = size >= 20;
     var half = size === 20;
     var extra = "";
     if (sp) {
+      var rerollLabel = (fmt === null)
+        ? "Format würfeln"
+        : (rerollsLeft > 0 ? "Neu würfeln (1× frei)" : "Neu würfeln (verbraucht)");
       extra = '<div class="fmt">' +
         (fmt !== null
           ? '<b>Format ' + (fmt + 1) + ': ' + esc(F[fmt][0]) + '</b>' + esc(F[fmt][2][cur]) + '<small>' + esc(F[fmt][1]) + (half ? ' · nur die ersten 5 Min.' : '') + '</small>'
-          : 'Noch kein Format gewürfelt.') +
+          : 'Noch kein Format gewürfelt (Uhr gibt den Takt, Rekord zählen).') +
         '</div>' +
-        '<div class="row" style="margin-top:8px"><button id="roll">' + (fmt === null ? 'Würfeln' : 'Neu würfeln') + '</button></div>';
+        '<div class="row" style="margin-top:8px">' +
+          '<button id="roll"' + (fmt !== null && rerollsLeft <= 0 ? ' disabled' : '') + '>' + rerollLabel + '</button>' +
+        '</div>';
     }
 
     h += blk(
       sp ? (half ? "5 Min." : "10 Min.") : "–",
-      "Spiel",
-      sp ? "Format per Würfel, Runden oder Zeit als Rekord." : "entfällt in dieser Größe",
+      "Spiel (" + esc(TYPES[cur]) + ")",
+      sp ? "Version passend zur Spiel-Rotation, Format per Würfel." : "entfällt in dieser Größe (Fokus auf Skills)",
       !sp,
       extra
     );
 
+    /* 4. Abschluss (5 Min.) */
     h += blk(
       size === 30 ? "5 Min." : "–",
-      "Abschluss",
-      size === 30 ? esc(d.end) : "kurz auslaufen lassen, dann Logbuch (1 Min.)",
+      "Abschluss & Logbuch",
+      size === 30 ? esc(DATA.end[cur]) : "kurz auslaufen lassen, dann 3 Zeilen ins Logbuch (ca. 1 Min.)",
       size !== 30
     );
 
@@ -680,16 +758,18 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
     var r = $("roll");
     if (r) {
       r.onclick = function(){
+        if (fmt !== null && rerollsLeft <= 0) return;
+        if (fmt !== null) rerollsLeft--;
         var x;
         do { x = Math.floor(Math.random() * F.length); } while (x === fmt && F.length > 1);
         fmt = x;
-        /* Timer automatisch passend zum gewürfelten Format voreinstellen */
         var fName = F[fmt][0].toLowerCase();
         if (fName.indexOf("emom") > -1) setTimerMode("emom");
         else if (fName.indexOf("tabata") > -1) setTimerMode("tabata");
         else if (fName.indexOf("parcours") > -1) setTimerMode("up");
         else setTimerMode("amrap");
         plan();
+        renderEditor();
       };
     }
   }
@@ -707,15 +787,16 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
 
     var DATA = getData();
     var F = getF();
-    var html = '<div class="ed-sec"><b>Texte für ' + esc(TYPES[cur]) + '</b>' +
-      '<label class="ed-lbl">Ritual (5 Min.)</label><textarea id="edRitual">' + esc(DATA[cur].ritual) + '</textarea>' +
-      '<label class="ed-lbl">Skill</label><textarea id="edSkill">' + esc(DATA[cur].skill) + '</textarea>' +
-      '<label class="ed-lbl">Abschluss</label><textarea id="edEnd">' + esc(DATA[cur].end) + '</textarea></div>';
+    var html = '<div class="ed-sec"><b>Basis-Texte & Skills (für Level-Ups anpassen)</b>' +
+      '<label class="ed-lbl">Ritual (5 Min. UK + OK)</label><textarea id="edRitual">' + esc(DATA.ritual) + '</textarea>' +
+      '<label class="ed-lbl">Unterkörper-Skill (Pistol Squat)</label><textarea id="edSkillPistol">' + esc(DATA.skillPistol) + '</textarea>' +
+      '<label class="ed-lbl">Oberkörper-Skill (Handstand-Linie)</label><textarea id="edSkillHandstand">' + esc(DATA.skillHandstand) + '</textarea>' +
+      '<label class="ed-lbl">Abschluss (' + esc(TYPES[cur]) + ')</label><textarea id="edEnd">' + esc(DATA.end[cur]) + '</textarea></div>';
 
     if (fmt !== null) {
       html += '<div class="ed-sec"><b>Format ' + (fmt + 1) + ': ' + esc(F[fmt][0]) + ' (' + esc(TYPES[cur]) + ')</b>' +
         '<label class="ed-lbl">Regel / Beschreibung</label><input type="text" id="edFmtRule" value="' + esc(F[fmt][1]) + '">' +
-        '<label class="ed-lbl">Übungen für diesen Typ</label><textarea id="edFmtText">' + esc(F[fmt][2][cur]) + '</textarea></div>';
+        '<label class="ed-lbl">Übungen für diese Version</label><textarea id="edFmtText">' + esc(F[fmt][2][cur]) + '</textarea></div>';
     }
 
     html += '<div class="row" style="margin-top:10px">' +
@@ -727,9 +808,10 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
 
     $("edSave").onclick = function(){
       var nextData = clone(getData());
-      nextData[cur].ritual = $("edRitual").value.trim() || DEFAULT_DATA[cur].ritual;
-      nextData[cur].skill = $("edSkill").value.trim() || DEFAULT_DATA[cur].skill;
-      nextData[cur].end = $("edEnd").value.trim() || DEFAULT_DATA[cur].end;
+      nextData.ritual = $("edRitual").value.trim() || DEFAULT_DATA.ritual;
+      nextData.skillPistol = $("edSkillPistol").value.trim() || DEFAULT_DATA.skillPistol;
+      nextData.skillHandstand = $("edSkillHandstand").value.trim() || DEFAULT_DATA.skillHandstand;
+      nextData.end[cur] = $("edEnd").value.trim() || DEFAULT_DATA.end[cur];
       st.customData = nextData;
 
       if (fmt !== null && $("edFmtText")) {
@@ -749,7 +831,7 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
       st.customF = null;
       save();
       editing = false;
-      toast("Standard-Plan wiederhergestellt");
+      toast("Nordstern-Standard wiederhergestellt");
       draw();
     };
   }
@@ -774,7 +856,7 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
       '<div class="stat-box"><span class="stat-val">' + totalMins + '</span><span class="stat-lbl">Minuten gesamt</span></div>' +
       '<div class="stat-box"><span class="stat-val">' + avgFeel + '</span><span class="stat-lbl">Ø Gefühl</span></div>';
 
-    var counts = {uk:0, ok:0, gk:0};
+    var counts = {ok:0, uk:0, gk:0};
     c.forEach(function(e){ if (counts[e.t] !== undefined) counts[e.t]++; });
 
     var bar = $("distBar");
@@ -784,7 +866,7 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
       return;
     }
 
-    var colors = {uk:"#1f6f5c", ok:"#4a90e2", gk:"#d9822b"};
+    var colors = {ok:"#4a90e2", uk:"#1f6f5c", gk:"#d9822b"};
     ORDER.forEach(function(k){
       var pct = Math.round((counts[k] / totalCore) * 100);
       if (pct > 0) {
@@ -797,16 +879,38 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
     });
 
     $("distText").textContent =
-      "UK: " + counts.uk + " · OK: " + counts.ok + " · GK: " + counts.gk +
+      "OK-Spiel: " + counts.ok + " · UK-Spiel: " + counts.uk + " · GK-Spiel: " + counts.gk +
       (st.log.length > totalCore ? " (+ " + (st.log.length - totalCore) + " Bonus)" : "");
   }
 
+  /* Bonus-Einheiten mit aufklappbarem Guide + Abhaken */
   function bonus(){
     var b = $("bonus");
     b.innerHTML = "";
     Object.keys(BONUS).forEach(function(k){
-      b.appendChild(btn(BONUS[k] + " ✓", "", function(){ add(k); }));
+      b.appendChild(btn(BONUS[k], activeBonusGuide === k ? "sel" : "", function(){
+        activeBonusGuide = (activeBonusGuide === k) ? null : k;
+        bonus();
+      }));
     });
+
+    var box = $("bonusDetails");
+    if (!activeBonusGuide) {
+      box.classList.add("hidden");
+      return;
+    }
+    var g = BONUS_GUIDE[activeBonusGuide];
+    box.classList.remove("hidden");
+    box.innerHTML =
+      '<b>' + esc(g.title) + '</b>' +
+      '<div style="color:var(--mut);margin-bottom:8px">' + esc(g.text) + '</div>' +
+      '<button class="sm sel" id="logBonusNow">' + esc(BONUS[activeBonusGuide]) + ' abhaken ✓</button>';
+
+    $("logBonusNow").onclick = function(){
+      var keyToSave = activeBonusGuide;
+      activeBonusGuide = null;
+      add(keyToSave);
+    };
   }
 
   function add(t){
@@ -815,12 +919,13 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
       t: t,
       s: t === cur ? size : 0,
       g: feel,
-      n: $("note").value.trim().slice(0, 140)
+      n: $("note").value.trim().slice(0, 160)
     });
     if (st.log.length > 500) st.log = st.log.slice(-500);
     save();
     feel = 0;
     fmt = null;
+    rerollsLeft = 1;
     $("note").value = "";
     cur = nextType();
     toast("Einheit gespeichert ✓");
@@ -874,14 +979,14 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
       dots.appendChild(s);
     }
     $("wk").textContent = n >= 3
-      ? "Wochenziel erreicht (" + n + " Kerneinheiten). Alles weitere ist Bonus."
-      : n + " von 3 Kerneinheiten";
+      ? "Wochenziel erreicht (" + n + " Kerneinheiten). Mindestens 1 Tag bleibt frei!"
+      : n + " von 3 Kerneinheiten (alle Größen zählen voll)";
 
     var streak = calcWeekStreak();
     $("streakBadge").textContent = streak > 0 ? (streak + (streak === 1 ? " Woche Serie" : " Wochen Serie")) : "";
 
     $("next").textContent = TYPES[cur];
-    $("nextsub").textContent = cur === nextType() ? "Nächste in der Rotation" : "Von dir gewählt";
+    $("nextsub").textContent = (cur === nextType() ? "Nächste in der Rotation (OK → UK → GK)" : "Von dir gewählt") + " · Skills sind immer dabei";
 
     var t = $("types");
     t.innerHTML = "";
@@ -889,21 +994,29 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
       t.appendChild(btn(TYPES[k], k === cur ? "sel" : "", function(){
         cur = k;
         fmt = null;
+        rerollsLeft = 1;
         draw();
       }));
     });
 
     var sz = $("sizes");
     sz.innerHTML = "";
+    var sizeHints = {
+      10: "Mini-Version: Ritual (5 Min.) + Skill (5 Min., je 2–3 Min. pro Skill).",
+      15: "Tipp bei wenig Zeit: Ritual (5 Min.) + voller Skill-Block (10 Min.) – zählt mehr als das Spiel!",
+      20: "Ritual (5 Min.) + voller Skill-Block (10 Min.) + halber Spiel-Block (5 Min.).",
+      30: "Volles Nordstern-Gerüst: Ritual (5) + Skill (10) + Spiel (10) + Abschluss (5)."
+    };
     [10, 15, 20, 30].forEach(function(m){
       sz.appendChild(btn(m + " Min.", m === size ? "sel" : "", function(){
         size = m;
-        if (timer.mode === "emom" || timer.mode === "amrap" || timer.mode === "tabata") {
+        if (timer.mode === "skill" || timer.mode === "emom" || timer.mode === "amrap" || timer.mode === "tabata") {
           setTimerMode(timer.mode);
         }
         draw();
       }));
     });
+    $("sizeHint").textContent = sizeHints[size];
 
     plan();
     renderEditor();
@@ -979,7 +1092,7 @@ textarea{min-height:74px;resize:vertical;line-height:1.4}
         var parsed = JSON.parse(e.target.result);
         if (!parsed || !Array.isArray(parsed.log)) throw new Error("Ungültiges Format");
         st.log = parsed.log;
-        if (parsed.customData) st.customData = parsed.customData;
+        if (parsed.customData && typeof parsed.customData.ritual === "string") st.customData = parsed.customData;
         if (parsed.customF) st.customF = parsed.customF;
         if (parsed.theme) st.theme = parsed.theme;
         save();
